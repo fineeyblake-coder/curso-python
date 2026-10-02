@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Python do zero: curso em vídeo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF0FB; --card:#FFFFFF; --ink:#14203F; --muted:#56638A; --line:#CBD6EE;
+  --blue:#3558F0; --yellow:#FFB703; --teal:#0FA38A; --pink:#F0507F;
+  --code:#14203F; --codeink:#E6ECFF;
+  --sans:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1226; --card:#151D38; --ink:#E8EEFF; --muted:#9AA7CC; --line:#27325A;
+    --blue:#7C93FF; --yellow:#FFC83D; --teal:#2DD4BC; --pink:#FF7DA0; --code:#0A0F20;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1226; --card:#151D38; --ink:#E8EEFF; --muted:#9AA7CC; --line:#27325A;
+  --blue:#7C93FF; --yellow:#FFC83D; --teal:#2DD4BC; --pink:#FF7DA0; --code:#0A0F20;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:clamp(1.3rem,3vw,1.9rem);margin:4px 0 14px;font-weight:800;letter-spacing:-.01em}
+
+.stage{position:relative;container-type:inline-size;background:var(--card);border:2px solid var(--ink);
+  border-radius:20px;overflow:hidden;aspect-ratio:16/9;box-shadow:6px 6px 0 var(--ink)}
+.progress{position:absolute;left:0;top:0;height:6px;width:100%;background:var(--line);z-index:3}
+#bar{height:100%;width:0;background:var(--yellow);transition:width .5s}
+#scene{position:absolute;inset:0;overflow:auto}
+.scene{display:grid;grid-template-columns:1fr 1.15fr;gap:3cqw;align-items:center;min-height:100%;
+  padding:clamp(18px,4.2cqw,44px) clamp(16px,4cqw,44px)}
+.scene h2{font-size:clamp(1.25rem,3.6cqw,2.4rem);line-height:1.08;margin:0 0 .5em;font-weight:800;letter-spacing:-.015em}
+.scene p{font-size:clamp(.9rem,1.8cqw,1.2rem);color:var(--muted);margin:0 0 .8em}
+.viz{display:flex;flex-direction:column;gap:1.6cqw;min-width:0}
+.viz svg{width:100%;height:auto;display:block}
+
+[data-at]{opacity:0;transition:opacity .5s,transform .5s}
+.ol,.card,li[data-at],.box,.chip,.tag,.legend>div,.solbl{transform:translateY(8px)}
+[data-at].show{opacity:1;transform:none}
+
+.editor{background:var(--code);border-radius:12px;overflow:hidden;border:2px solid var(--ink)}
+.bar2{display:flex;align-items:center;gap:6px;padding:7px 12px;background:rgba(255,255,255,.07);color:#8E9BC4;font:600 .72rem var(--mono)}
+.bar2 i{width:10px;height:10px;border-radius:50%;background:#FF6B8A}
+.bar2 i:nth-child(2){background:#FFC83D}.bar2 i:nth-child(3){background:#2DD4BC}
+.bar2 span{margin-left:8px}
+.code{margin:0;padding:1.6cqw 2cqw;font:400 clamp(.72rem,1.75cqw,1.05rem)/1.6 var(--mono);color:var(--codeink);
+  min-height:2.4em;white-space:pre;overflow-x:auto}
+.code .kw{color:#FF8FB1}.code .str{color:#7EE0C3}.code .num{color:#FFD166}.code .fn{color:#8FB0FF}.code .cm{color:#7E8BB5}
+.caret{display:inline-block;width:.55em;height:1.05em;background:var(--yellow);vertical-align:text-bottom;margin-left:1px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.out{border:2px dashed var(--teal);border-radius:12px;padding:1.2cqw 2cqw;min-height:3.2em}
+.outlbl{font-size:clamp(.65rem,1.3cqw,.8rem);color:var(--teal);font-weight:700;margin-bottom:2px}
+.ol{font:600 clamp(.8rem,1.9cqw,1.15rem)/1.6 var(--mono);color:var(--ink);white-space:pre-wrap}
+.ol.err{color:var(--pink)}
+
+.scene.compact{grid-template-columns:.8fr 1.4fr}
+.compact .code{font-size:clamp(.64rem,1.4cqw,.88rem);line-height:1.5}
+.compact .ol{font-size:clamp(.7rem,1.55cqw,.95rem);line-height:1.45}
+.compact .out{padding:.8cqw 2cqw}
+
+.card{background:var(--bg);border:2px solid var(--ink);border-radius:14px;padding:1.6cqw 2cqw}
+.card h3{margin:0 0 .4em;font-size:clamp(.9rem,1.9cqw,1.2rem)}
+.card ol,.card ul{margin:0;padding-left:1.3em;font-size:clamp(.82rem,1.8cqw,1.1rem)}
+.card li{margin:.3em 0}
+.card.dk{background:var(--code);color:var(--codeink)}
+.mono li{font-family:var(--mono)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:2cqw}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:2cqw}
+.type .big{font:700 clamp(1.3rem,4cqw,2.6rem) var(--mono);margin-bottom:.1em}
+.type small{color:var(--muted);font-size:clamp(.75rem,1.5cqw,.95rem)}
+.t-str .big{color:var(--teal)}.t-int .big{color:var(--blue)}.t-flt .big{color:var(--pink)}.t-bool .big{color:#C98A00}
+
+.boxes{display:flex;gap:2cqw}
+.box{flex:1;border:2px solid var(--ink);border-radius:12px;background:var(--bg);padding:1cqw 1.6cqw;text-align:center}
+.box b{display:block;font:700 clamp(.9rem,2.4cqw,1.5rem) var(--mono)}
+.box span{font-size:clamp(.7rem,1.4cqw,.9rem);color:var(--muted)}
+.tags{display:flex;gap:1.6cqw;flex-wrap:wrap}
+.tag{background:var(--yellow);color:#14203F;border:2px solid var(--ink);border-radius:8px;padding:.3em .9em;font:700 clamp(.85rem,2cqw,1.2rem) var(--mono)}
+.total{font:700 clamp(1rem,2.6cqw,1.6rem) var(--mono)}
+.total b{color:var(--teal)}
+.chips{display:flex;gap:1.6cqw}
+.chip{flex:1;text-align:center;border:2px solid var(--ink);border-radius:12px;padding:.5em;background:var(--bg);font:700 clamp(.85rem,2cqw,1.2rem) var(--mono)}
+.legend{display:flex;flex-direction:column;gap:.5em}
+.legend div{font-size:clamp(.82rem,1.7cqw,1.1rem);color:var(--muted)}
+.legend code{font:600 .95em var(--mono);background:var(--code);color:#FFD166;border-radius:6px;padding:.1em .5em;margin-right:.4em}
+.machine{display:flex;align-items:center;gap:1.4cqw;justify-content:center}
+.machine .gear{background:var(--blue);color:#fff;border:2px solid var(--ink);border-radius:14px;padding:.7em 1.1em;font:700 clamp(.85rem,2cqw,1.2rem) var(--mono)}
+.machine .io{border:2px solid var(--ink);border-radius:10px;padding:.4em .8em;background:var(--yellow);color:#14203F;font:700 clamp(.8rem,1.9cqw,1.15rem) var(--mono)}
+.machine .arr{font-size:clamp(1rem,2.4cqw,1.6rem);color:var(--muted)}
+.checks li::marker{content:"✓  ";color:var(--teal);font-weight:800}
+.solbl{align-self:flex-start;background:var(--teal);color:#fff;border-radius:999px;padding:.15em .9em;font-weight:800;font-size:clamp(.75rem,1.6cqw,1rem)}
+.challenge{border:2px solid var(--yellow);border-radius:14px;padding:1.4cqw 2cqw;background:var(--bg);font-size:clamp(.9rem,1.9cqw,1.2rem)}
+
+.capa{grid-template-columns:1.3fr .7fr}
+.capa .viz{align-items:center}
+.bignum{font:800 clamp(5rem,22cqw,13rem)/1 var(--sans);background:var(--yellow);color:#14203F;border:3px solid var(--ink);
+  border-radius:28px;box-shadow:8px 8px 0 var(--ink);padding:.05em .35em}
+
+.f-card{fill:var(--card)}.f-bg{fill:var(--bg)}.f-ink{fill:var(--ink)}.f-blue{fill:var(--blue)}
+.f-yellow{fill:var(--yellow)}.f-teal{fill:var(--teal)}.f-pink{fill:var(--pink)}.f-code{fill:var(--code)}
+.s-ink{stroke:var(--ink);stroke-width:2.5;fill:none}.s-ink.f{fill:var(--card)}
+.t-ink{fill:var(--ink);font:700 15px var(--sans)}.t-mut{fill:var(--muted);font:600 13px var(--sans)}
+.march{stroke:var(--ink);stroke-width:3;stroke-dasharray:8 7;animation:march 1s linear infinite}
+@keyframes march{to{stroke-dashoffset:-15}}
+.hit{stroke:var(--yellow);stroke-width:5;fill:none}
+
+.cover{position:absolute;inset:0;z-index:4;background:var(--card);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;gap:1.2cqw;padding:4cqw}
+.cover h2{font-size:clamp(1.5rem,5.2cqw,3.4rem);margin:0;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+.cover p{margin:0;color:var(--muted);font-size:clamp(.9rem,1.9cqw,1.25rem);max-width:34em}
+.cover[hidden]{display:none}
+button{font:inherit;cursor:pointer;color:var(--ink)}
+.go{background:var(--yellow);color:#14203F;border:2px solid var(--ink);border-radius:999px;padding:.7em 1.6em;font-weight:800;
+  font-size:clamp(1rem,2.2cqw,1.3rem);box-shadow:4px 4px 0 var(--ink);margin-top:1cqw}
+.go:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+
+.cap{min-height:3.4em;margin:14px 2px 10px;font-size:clamp(1rem,2.2vw,1.25rem);font-weight:500}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctrl button,.ctrl select{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:.45em .9em;font-weight:700;color:var(--ink)}
+.ctrl button.main{background:var(--yellow);color:#14203F;min-width:5.5em}
+.ctrl .sp{flex:1}
+button:focus-visible,select:focus-visible,summary:focus-visible,textarea:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.hint{margin:12px 0 0;padding:10px 14px;border:2px solid var(--yellow);border-radius:12px;background:var(--card);font-size:.9rem;color:var(--muted)}
+.hint[hidden]{display:none}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.tabs button{background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:.4em .9em;font-weight:700;font-size:.92rem}
+.tabs button.cur{background:var(--ink);color:var(--card)}
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.nav button{background:transparent;border:2px solid var(--line);border-radius:999px;padding:.3em .9em;font-size:.86rem;font-weight:600;color:var(--muted)}
+.nav button.cur{border-color:var(--ink);background:var(--card);color:var(--ink)}
+details{margin-top:18px;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:10px 14px}
+summary{cursor:pointer;font-weight:700}
+textarea{width:100%;margin-top:10px;border:2px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);color:var(--ink);font:400 .9rem/1.5 var(--sans)}
+
+@container (max-width:640px){
+  .scene,.scene.compact,.capa{grid-template-columns:1fr;gap:14px}
+  .pair{grid-template-columns:1fr}
+  .bignum{font-size:4.5rem}
+}
+@media (max-width:700px){
+  .stage{aspect-ratio:auto;min-height:600px}
+  .stage .scene{padding-top:26px}
+}
+@media (prefers-reduced-motion:reduce){
+  [data-at]{transition:none}.march,.caret{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Python do zero: curso em vídeo</h1>
+
+  <div class="stage">
+    <div class="progress"><div id="bar"></div></div>
+    <div id="scene" aria-live="off"></div>
+    <div class="cover" id="cover">
+      <h2>Python do zero em 6 aulas</h2>
+      <p>Mais de 40 cenas com animações, código sendo digitado, desafios e um projeto final. Ligue o som e aperte começar. Duração: cerca de 25 minutos.</p>
+      <button class="go" id="start">Começar o curso</button>
+    </div>
+  </div>
+
+  <div class="cap" id="cap">Aperte "Começar o curso" para iniciar.</div>
+
+  <div class="ctrl">
+    <button id="prev" aria-label="Cena anterior" title="Cena anterior">◀</button>
+    <button id="play" class="main" aria-label="Pausar ou continuar">▶ Play</button>
+    <button id="next" aria-label="Próxima cena" title="Próxima cena">▶▶</button>
+    <span class="sp"></span>
+    <button id="mute" aria-pressed="false" title="Ligar ou desligar a narração">Voz: ligada</button>
+    <select id="voice" aria-label="Escolher voz" style="max-width:13em"><option>Carregando vozes…</option></select>
+    <select id="rate" aria-label="Velocidade da narração">
+      <option value="0.8">Bem lenta</option><option value="0.92" selected>Suave</option><option value="1.05">Normal</option><option value="1.2">Rápida</option>
+    </select>
+  </div>
+
+  <p class="hint" id="hint" hidden></p>
+
+  <nav class="tabs" id="tabs" aria-label="Aulas do curso"></nav>
+  <nav class="nav" id="nav" aria-label="Cenas da aula"></nav>
+
+  <details>
+    <summary>Roteiro de narração desta aula (para gravar com sua própria voz)</summary>
+    <textarea id="rotTxt" rows="12" readonly aria-label="Roteiro da aula"></textarea>
+  </details>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const attr=s=>s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/\n/g,'&#10;');
+const join=a=>a.length>1?a.slice(0,-1).join(', ')+' e '+a[a.length-1]:a[0];
+const TS=30;
+
+function hl(s){
+  const re=/("[^"]*"?)|(#.*)|\b(elif|if|else|for|in|def|return|True|False|while|break|import|and|or|not)\b|\b(print|range|type|len|input|int|float|str|sum|randint|append|upper)\b|(\b\d+(?:\.\d+)?\b)/g;
+  let out='',last=0,m;
+  while((m=re.exec(s))){
+    out+=esc(s.slice(last,m.index));
+    const c=m[1]?'str':m[2]?'cm':m[3]?'kw':m[4]?'fn':'num';
+    out+=`<span class="${c}">${esc(m[0])}</span>`;
+    last=m.index+m[0].length;
+  }
+  return out+esc(s.slice(last));
+}
+const ed=(code,at=500)=>`<div class="editor"><div class="bar2"><i></i><i></i><i></i><span>aula.py</span></div><pre class="code" data-code="${attr(code)}" data-type="${at}"></pre></div>`;
+const tEnd=(code,at=500)=>at+code.length*TS;
+const out=(lines,at,gap=450,cls='')=>`<div class="out"><div class="outlbl">Resultado na tela</div>${lines.map((l,i)=>`<div class="ol ${cls}" data-at="${at+i*gap}">${esc(l)}</div>`).join('')}</div>`;
+const legend=(items,at=2500,gap=3000)=>`<div class="legend">${items.map(([c,t],i)=>`<div data-at="${at+i*gap}"><code>${esc(c)}</code>${esc(t)}</div>`).join('')}</div>`;
+
+/* cena padrão: texto + código + resultado */
+function std({t,h2,p='',extra='',code,res,say,gap=450,cls=''}){
+  const compact=code.split('\n').length>7||res.length>4;
+  return {title:t,say,html:()=>`<div class="scene${compact?' compact':''}"><div class="copy"><h2>${h2}</h2>${p?`<p>${p}</p>`:''}${extra}</div>
+    <div class="viz">${ed(code)}${out(res,tEnd(code)+400,gap,cls)}</div></div>`};
+}
+function capa(n,title,topics){
+  return {title:'Abertura',say:[`Aula ${n}. ${title}.`,`Nesta aula você vai ver: ${join(topics)}.`],
+    html:()=>`<div class="scene capa"><div class="copy"><h2>${title}</h2><p>Nesta aula:</p>
+      <ul class="checks card" data-at="600" style="list-style:revert">${topics.map((x,i)=>`<li data-at="${1800+i*1600}">${esc(x)}</li>`).join('')}</ul></div>
+      <div class="viz"><div class="bignum">${n}</div></div></div>`};
+}
+function desafio(texto,code,res,say){
+  return {title:'Desafio',say,html:()=>`<div class="scene"><div class="copy"><h2>Desafio</h2>
+      <div class="challenge">${texto}</div><p style="margin-top:.8em">Pause e tente sozinho. Depois confira a solução.</p></div>
+      <div class="viz"><div class="solbl" data-at="7000">Solução</div>${ed(code,8000)}${out(res,tEnd(code,8000)+400,600)}</div></div>`};
+}
+
+const aulas=[
+ {t:'Primeiros passos'},{t:'Textos e números'},{t:'Decisões'},{t:'Listas e repetição'},{t:'Funções e erros'},{t:'Projeto final'}
+];
+const scenes=[];
+const add=(a,list)=>list.forEach(s=>{s.aula=a;scenes.push(s)});
+
+/* ================= AULA 1 ================= */
+const c3='print("Olá, mundo!")';
+const c4='nome = "Ana"\nidade = 15\nprint("Oi,", nome)';
+const c6='chovendo = True\nif chovendo:\n    print("Leve o guarda-chuva")\nelse:\n    print("Use óculos escuros")';
+const c7='for i in range(1, 4):\n    print("Volta", i)';
+const c8='def saudar(nome):\n    return "Olá, " + nome\n\nprint(saudar("Ana"))\nprint(saudar("Bia"))';
+const c9='precos = [10, 25, 5]\ntotal = 0\nfor p in precos:\n    total = total + p\nprint("Total:", total)';
+
+add(0,[
+capa(1,'Primeiros passos',['o que é programar','print, variáveis e tipos','condições, repetição e funções']),
+{
+  title:'O que é programar',
+  say:['Olá! Bem-vindo à sua primeira aula de programação.',
+       'Programar é dar instruções claras para o computador, passo a passo.',
+       'Ele é muito rápido, mas não adivinha nada. Ele faz exatamente o que você escrever.'],
+  html:()=>`<div class="scene"><div class="copy"><h2>Programar é dar instruções ao computador</h2><p>Passo a passo, sem pular nada.</p></div>
+  <div class="viz"><svg viewBox="0 0 520 250" role="img" aria-label="Uma pessoa envia instruções para um computador">
+    <circle class="f-yellow s-ink" cx="70" cy="95" r="27"/>
+    <rect class="f-blue s-ink" x="38" y="126" width="64" height="76" rx="26" style="fill:var(--blue)"/>
+    <circle cx="61" cy="91" r="3.2" class="f-ink"/><circle cx="80" cy="91" r="3.2" class="f-ink"/>
+    <path d="M60 103 Q70 111 81 103" class="s-ink" stroke-linecap="round"/>
+    <g data-at="700"><rect class="s-ink f" x="122" y="28" width="132" height="102" rx="16"/>
+      <path d="M135 130 L128 150 L156 130" class="s-ink f"/>
+      <text class="t-ink" x="140" y="62">1. ande</text><text class="t-ink" x="140" y="87">2. vire</text><text class="t-ink" x="140" y="112">3. pare</text></g>
+    <g data-at="1800"><line class="march" x1="262" y1="85" x2="328" y2="85"/><path d="M328 76 L344 85 L328 94" class="s-ink" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g data-at="2600"><rect class="f-ink" x="350" y="40" width="150" height="105" rx="12"/>
+      <rect class="f-code" x="360" y="50" width="130" height="85" rx="6" style="fill:#0A3B3A"/>
+      <text x="374" y="100" style="fill:#2DD4BC;font:700 26px var(--mono)">&gt;_</text>
+      <rect class="f-ink" x="410" y="145" width="30" height="16"/><rect class="f-ink" x="385" y="160" width="80" height="9" rx="4"/></g>
+    <text class="t-mut" x="38" y="228" data-at="3200">Você escreve</text>
+    <text class="t-mut" x="372" y="228" data-at="3200">O computador executa</text>
+  </svg></div></div>`
+},
+{
+  title:'Receita',
+  say:['Um programa é parecido com uma receita de bolo.',
+       'A receita tem uma lista de passos, na ordem certa.',
+       'O programa também. Cada linha é uma ordem, e o computador lê de cima para baixo.',
+       'Se você trocar a ordem, o resultado muda. Imagine servir o bolo antes de assar!'],
+  html:()=>`<div class="scene"><div class="copy"><h2>Um programa é como uma receita</h2><p>Passos na ordem certa levam ao resultado certo.</p></div>
+  <div class="viz"><div class="pair">
+    <div class="card" data-at="500"><h3>Receita de bolo</h3><ol>
+      <li data-at="1500">Misture ovos e farinha</li><li data-at="4200">Leve ao forno por 30 minutos</li><li data-at="7000">Sirva o bolo</li></ol></div>
+    <div class="card dk" data-at="800"><h3>Programa (ideia)</h3><ol class="mono">
+      <li data-at="2200">misturar(ovos, farinha)</li><li data-at="4900">assar(forno, 30)</li><li data-at="7700">servir(bolo)</li></ol></div>
+  </div></div></div>`
+},
+{
+  title:'Primeiro código',
+  say:['Vamos escrever o seu primeiro código.',
+       'A palavra print quer dizer: mostre na tela.',
+       'Entre os parênteses vai aquilo que você quer mostrar.',
+       'E as aspas avisam ao computador que aquilo é um texto.',
+       'Quando o programa roda, aparece na tela: Olá, mundo! Parabéns, você acabou de programar!'],
+  html:()=>`<div class="scene"><div class="copy"><h2>Seu primeiro código</h2>
+    ${legend([['print','mostra algo na tela'],['( )','guardam o que será mostrado'],['" "','indicam que é um texto']],2500,3000)}</div>
+  <div class="viz">${ed(c3)}${out(['Olá, mundo!'],tEnd(c3)+600)}</div></div>`
+},
+{
+  title:'Variáveis',
+  say:['Agora vamos guardar informações. Para isso usamos variáveis.',
+       'Pense numa caixa com uma etiqueta. A etiqueta é o nome, e dentro fica o valor.',
+       'Aqui, a caixa nome guarda a palavra Ana, e a caixa idade guarda o número quinze.',
+       'Depois, é só usar o nome da caixa quando precisar do valor.'],
+  html:()=>`<div class="scene"><div class="copy"><h2>Variáveis guardam valores</h2><p>Uma caixa com etiqueta: o nome é a etiqueta, o valor fica dentro.</p></div>
+  <div class="viz"><div class="boxes">
+    <div class="box" data-at="1700"><span>nome</span><b>"Ana"</b></div>
+    <div class="box" data-at="2600"><span>idade</span><b>15</b></div></div>
+    ${ed(c4)}${out(['Oi, Ana'],tEnd(c4)+500)}</div></div>`
+},
+{
+  title:'Tipos de dados',
+  say:['Cada valor tem um tipo.',
+       'Texto vem entre aspas, e o nome do tipo é str.',
+       'Números inteiros, como quarenta e dois, são do tipo int.',
+       'Números com vírgula usam ponto no Python, e são do tipo float.',
+       'E existe o verdadeiro ou falso, chamado de bool, que vamos usar já já.'],
+  html:()=>`<div class="scene"><div class="copy"><h2>Cada valor tem um tipo</h2><p>O tipo diz ao computador o que ele pode fazer com o valor.</p></div>
+  <div class="viz"><div class="grid4">
+    <div class="card type t-str" data-at="2800"><div class="big">"Olá"</div><small>texto (str)</small></div>
+    <div class="card type t-int" data-at="5200"><div class="big">42</div><small>inteiro (int)</small></div>
+    <div class="card type t-flt" data-at="8000"><div class="big">3.14</div><small>decimal (float)</small></div>
+    <div class="card type t-bool" data-at="11500"><div class="big">True</div><small>verdadeiro ou falso (bool)</small></div>
+  </div></div></div>`
+},
+{
+  title:'Condições',
+  say:['Programas também tomam decisões. Para isso usamos o if, que quer dizer: se.',
+       'Se estiver chovendo, leve o guarda-chuva. Senão, use óculos escuros.',
+       'Repare no dois pontos no final e no recuo das linhas. Isso mostra o que pertence a cada caso.',
+       'Como a variável chovendo é verdadeira, o programa escolhe o primeiro caminho.'],
+  html:()=>{const b=tEnd(c6)+300;return `<div class="scene compact"><div class="copy"><h2>Condições: o programa decide</h2>
+    <svg viewBox="0 0 300 200" role="img" aria-label="Fluxograma: se chovendo, guarda-chuva, senão óculos escuros">
+      <polygon class="s-ink f" points="150,6 235,44 150,82 65,44"/>
+      <text class="t-ink" x="150" y="49" text-anchor="middle">chovendo?</text>
+      <path class="s-ink" d="M108 63 L70 112"/><path class="s-ink" d="M192 63 L230 112"/>
+      <text class="t-mut" x="72" y="92">sim</text><text class="t-mut" x="210" y="92">não</text>
+      <rect class="s-ink f" x="6" y="112" width="128" height="52" rx="10"/>
+      <text class="t-ink" x="70" y="143" text-anchor="middle">guarda-chuva</text>
+      <rect class="s-ink f" x="166" y="112" width="128" height="52" rx="10"/>
+      <text class="t-ink" x="230" y="143" text-anchor="middle">óculos escuros</text>
+      <rect class="hit" x="3" y="109" width="134" height="58" rx="12" data-at="${b}"/>
+    </svg></div>
+  <div class="viz">${ed(c6)}${out(['Leve o guarda-chuva'],b)}</div></div>`}
+},
+{
+  title:'Repetição',
+  say:['Agora, repetição. Imagine escrever a mesma coisa cem vezes. Ninguém merece!',
+       'O for repete um bloco de código. Aqui, ele conta de um até três.',
+       'Repare: o range vai até o número anterior ao final, por isso o quatro não entra.',
+       'Resultado: volta um, volta dois, volta três.'],
+  html:()=>{const b=tEnd(c7)+400;return `<div class="scene"><div class="copy"><h2>Repetição: sem copiar e colar</h2><p>Escreva uma vez, repita quantas vezes quiser.</p>
+    <div class="chips"><div class="chip" data-at="${b}">1</div><div class="chip" data-at="${b+450}">2</div><div class="chip" data-at="${b+900}">3</div></div></div>
+  <div class="viz">${ed(c7)}${out(['Volta 1','Volta 2','Volta 3'],b)}</div></div>`}
+},
+{
+  title:'Funções',
+  say:['Quando um trecho de código vai ser usado várias vezes, criamos uma função.',
+       'Ela é como uma pequena máquina. Você coloca um valor, ela faz o trabalho e devolve um resultado.',
+       'A palavra def cria a função, e return diz o que ela devolve.',
+       'Agora podemos chamar a mesma máquina para a Ana e para a Bia.'],
+  html:()=>{const b=tEnd(c8)+300;return `<div class="scene compact"><div class="copy"><h2>Funções: receitas que você reutiliza</h2>
+    <div class="machine" data-at="1500" style="flex-wrap:wrap"><div class="io">"Ana"</div><span class="arr">→</span><div class="gear">saudar()</div><span class="arr">→</span><div class="io">"Olá, Ana"</div></div></div>
+  <div class="viz">${ed(c8)}${out(['Olá, Ana','Olá, Bia'],b,600)}</div></div>`}
+},
+{
+  title:'Juntando tudo',
+  say:['Vamos juntar tudo num mini projeto: o total de uma compra.',
+       'Temos uma lista com três preços, e uma variável total que começa em zero.',
+       'O for passa por cada preço e soma no total.',
+       'Dez, mais vinte e cinco, mais cinco. O resultado é quarenta.'],
+  html:()=>{const b=tEnd(c9);return `<div class="scene"><div class="copy"><h2>Juntando tudo: o total da compra</h2>
+    <div class="tags"><div class="tag" data-at="1200">10</div><div class="tag" data-at="1700">25</div><div class="tag" data-at="2200">5</div></div>
+    <p></p><div class="total">total = <b id="tot">0</b></div></div>
+  <div class="viz">${ed(c9)}${out(['Total: 40'],b+2000)}</div></div>`},
+  run:(ctx)=>{const b=tEnd(c9);
+    [[b+300,10],[b+900,35],[b+1500,40]].forEach(([t,v])=>ctx.after(t,()=>{const e=$('#tot');if(e)e.textContent=v}));
+    return b+2500;}
+},
+desafio('Crie as variáveis nome e idade e mostre na tela: Oi, Ana, você tem 15 anos.',
+  'nome = "Ana"\nidade = 15\nprint("Oi,", nome + ", você tem", idade, "anos")',
+  ['Oi, Ana, você tem 15 anos'],
+  ['Hora do primeiro desafio! Crie as variáveis nome e idade, e mostre uma frase completa na tela.',
+   'Pause o vídeo e tente resolver sozinho.','Pronto? Veja uma possível solução.',
+   'O print aceita vários valores separados por vírgula, e ele coloca um espaço entre eles.']),
+{
+  title:'Resumo',
+  say:['E é isso! Você viu o essencial: print, variáveis, tipos, condições, repetição e funções.',
+       'Isso é a base de qualquer linguagem de programação.',
+       'Pratique um pouco todo dia. Mude os valores dos exemplos e veja o que acontece.',
+       'E quando aparecer um erro, não se assuste. Leia a mensagem: ela diz onde está o problema.',
+       'Na próxima aula, vamos mexer com textos e números. Vamos lá!'],
+  html:()=>`<div class="scene"><div class="copy"><h2>Você deu o primeiro passo</h2><p>Quem aprende a ler erros aprende a programar.</p></div>
+  <div class="viz"><div class="pair">
+    <div class="card" data-at="1200"><h3>O que você viu</h3><ul class="checks">
+      <li>print mostra algo na tela</li><li>variáveis guardam valores</li><li>tipos: texto, número, bool</li><li>if decide</li><li>for repete</li><li>def cria funções</li></ul></div>
+    <div class="card dk" data-at="9000"><h3>Para continuar</h3><ol>
+      <li>Pratique 15 minutos por dia</li><li>Mude os exemplos e observe</li><li>Leia as mensagens de erro</li></ol></div>
+  </div></div></div>`
+}
+]);
+
+/* ================= AULA 2 ================= */
+add(1,[
+capa(2,'Textos e números',['operações matemáticas','a ordem das operações','textos e f-strings','perguntas com input','conversão de tipos']),
+std({t:'Operações',h2:'Python é uma calculadora',p:'Soma, subtração, multiplicação, divisão e mais.',
+  code:'a = 10\nb = 3\nprint(a + b)\nprint(a - b)\nprint(a * b)\nprint(a / b)\nprint(a // b)\nprint(a % b)\nprint(a ** 2)',
+  res:['13','7','30','3.3333333333333335','3','1','100'],gap:500,
+  say:['Python é uma ótima calculadora.','O sinal de mais soma, o de menos subtrai, o asterisco multiplica e a barra divide.',
+       'A divisão com duas barras devolve só a parte inteira, e o sinal de porcentagem devolve o resto da divisão.',
+       'Dois asteriscos fazem a potência. Dez ao quadrado dá cem.','Repare que dez dividido por três dá um número decimal.']}),
+std({t:'Ordem das operações',h2:'A ordem das operações importa',p:'Use parênteses para mandar na ordem.',
+  code:'print(2 + 3 * 4)\nprint((2 + 3) * 4)',res:['14','20'],gap:800,
+  say:['Como na matemática da escola, a multiplicação vem antes da soma.','Então dois mais três vezes quatro dá quatorze.',
+       'Se você quer somar primeiro, use parênteses.','Com parênteses, o resultado passa a ser vinte.']}),
+std({t:'Textos',h2:'Textos também têm superpoderes',p:'Juntar, repetir, contar e transformar.',
+  code:'nome = "Ana"\nprint("Olá, " + nome)\nprint("ha" * 3)\nprint(len(nome))\nprint(nome.upper())',
+  res:['Olá, Ana','hahaha','3','ANA'],gap:600,
+  say:['Textos também têm superpoderes.','O sinal de mais junta dois textos. Isso se chama concatenar.',
+       'Multiplicar um texto por um número repete o texto.','A função len conta quantas letras tem o texto, e o upper deixa tudo em maiúsculas.']}),
+std({t:'f-strings',h2:'f-strings: frases com dados',p:'Tudo entre chaves vira o valor da variável.',
+  code:'nome = "Ana"\nidade = 15\nprint(f"{nome} tem {idade} anos")',res:['Ana tem 15 anos'],
+  say:['Juntar textos com o sinal de mais fica cansativo. Existe um jeito melhor: a f string.','Basta colocar a letra f antes das aspas.',
+       'Aí, tudo que estiver entre chaves é trocado pelo valor da variável.','É a forma mais usada para montar frases com dados.']}),
+std({t:'input',h2:'Conversando com o usuário',p:'O input pergunta e espera a resposta.',
+  code:'nome = input("Qual é o seu nome? ")\nprint(f"Prazer, {nome}!")',res:['Qual é o seu nome? Ana','Prazer, Ana!'],gap:900,
+  say:['Até agora o programa não conversava com ninguém. Vamos mudar isso com o input.','O input mostra uma pergunta e espera que a pessoa digite.',
+       'O que foi digitado fica guardado na variável.','Aqui, a pessoa digitou Ana, e o programa respondeu: Prazer, Ana!']}),
+std({t:'Converter tipos',h2:'O input sempre devolve texto',p:'Use int ou float para virar número.',
+  extra:legend([['int()','texto para número inteiro'],['float()','texto para número decimal']],3500,3500),
+  code:'idade = input("Idade: ")\nidade = int(idade)\nprint(idade + 1)',res:['Idade: 15','16'],gap:900,
+  say:['Atenção: o input sempre devolve texto, mesmo que a pessoa digite um número.','Se você tentar somar um texto com um número, dá erro.',
+       'Por isso usamos o int para converter o texto em número inteiro.','Para números com vírgula, use o float.','Agora o programa soma um à idade e mostra dezesseis.']}),
+desafio('Peça o preço de um produto e mostre o preço com 10% de desconto.',
+  'preco = float(input("Preço: "))\nprint(preco * 0.9)',['Preço: 100','90.0'],
+  ['Desafio da aula dois! Peça o preço de um produto e mostre o valor com dez por cento de desconto.',
+   'Pause o vídeo e tente resolver sozinho. Dica: dez por cento de desconto é o mesmo que multiplicar por zero vírgula nove.',
+   'Pronto? Veja uma possível solução.','Usamos float para aceitar preços com centavos, e multiplicamos por zero vírgula nove.'])
+]);
+
+/* ================= AULA 3 ================= */
+add(2,[
+capa(3,'Decisões',['comparações','vários caminhos com elif','operadores lógicos']),
+std({t:'Comparações',h2:'Comparações devolvem verdadeiro ou falso',
+  extra:legend([['==','igual a (compara)'],['!=','diferente de'],['>=','maior ou igual a']],2500,3000),
+  code:'idade = 17\nprint(idade > 18)\nprint(idade >= 18)\nprint(idade == 17)\nprint(idade != 17)',
+  res:['False','False','True','False'],gap:600,
+  say:['Para decidir, o programa precisa comparar valores.','Maior, maior ou igual e diferente são operadores de comparação.',
+       'Cuidado: dois sinais de igual comparam, e um sinal só guarda um valor numa variável.','O resultado de uma comparação é sempre verdadeiro ou falso, o nosso conhecido bool.']}),
+std({t:'elif',h2:'Vários caminhos com elif',p:'O elif quer dizer: senão, se.',
+  code:'nota = 6\nif nota >= 7:\n    print("Aprovado")\nelif nota >= 5:\n    print("Recuperação")\nelse:\n    print("Reprovado")',
+  res:['Recuperação'],
+  say:['E se existirem mais de dois caminhos? Usamos o elif.','Ele significa: senão, se.',
+       'O programa testa de cima para baixo e executa só o primeiro caso verdadeiro.','Com nota 6, a primeira condição falha, a segunda passa, e o resultado é Recuperação.']}),
+std({t:'and, or, not',h2:'Combinando condições',
+  extra:legend([['and','os dois precisam ser verdadeiros'],['or','pelo menos um verdadeiro'],['not','inverte o valor']],2500,3500),
+  code:'idade = 20\ntem_ingresso = True\nif idade >= 18 and tem_ingresso:\n    print("Pode entrar")\nelse:\n    print("Não pode entrar")',
+  res:['Pode entrar'],
+  say:['Às vezes, uma decisão depende de duas condições ao mesmo tempo.','O and exige que as duas sejam verdadeiras. O or exige que pelo menos uma seja. O not inverte o valor.',
+       'Aqui, a pessoa tem vinte anos e tem ingresso, então pode entrar.']}),
+desafio('Peça um número e diga se ele é par ou ímpar.',
+  'n = int(input("Número: "))\nif n % 2 == 0:\n    print("Par")\nelse:\n    print("Ímpar")',['Número: 7','Ímpar'],
+  ['Desafio da aula três! Peça um número e diga se ele é par ou ímpar.',
+   'Pause o vídeo e tente. Dica: use o resto da divisão por dois.','Pronto? Veja uma possível solução.',
+   'Se o resto da divisão por dois for zero, o número é par. Senão, é ímpar.'])
+]);
+
+/* ================= AULA 4 ================= */
+add(3,[
+capa(4,'Listas e repetição',['listas','for com listas','while','break']),
+std({t:'Listas',h2:'Listas guardam vários valores',
+  extra:`<div class="boxes"><div class="box" data-at="2500"><span>índice 0</span><b>"maçã"</b></div><div class="box" data-at="3500"><span>índice 1</span><b>"banana"</b></div><div class="box" data-at="4500"><span>índice 2</span><b>"uva"</b></div></div>`,
+  code:'frutas = ["maçã", "banana", "uva"]\nprint(frutas[0])\nprint(len(frutas))\nfrutas.append("pera")\nprint(frutas)',
+  res:['maçã','3',"['maçã', 'banana', 'uva', 'pera']"],gap:700,
+  say:['Uma lista guarda vários valores em uma variável só.','Cada item tem uma posição, chamada índice, e a contagem começa no zero.',
+       'Então o índice zero é a maçã.','O len mostra o tamanho, e o append adiciona um item no final.']}),
+std({t:'for em listas',h2:'for percorre a lista',p:'A cada volta, um item novo.',
+  code:'frutas = ["maçã", "banana", "uva"]\nfor fruta in frutas:\n    print("Eu gosto de", fruta)',
+  res:['Eu gosto de maçã','Eu gosto de banana','Eu gosto de uva'],gap:700,
+  say:['O for fica ainda melhor quando combinado com listas.','A cada volta, a variável fruta assume o próximo item.',
+       'Você não precisa saber quantos itens existem. O Python percorre todos.','O resultado: uma frase para cada fruta.']}),
+std({t:'while',h2:'while repete enquanto for verdade',p:'Cuidado para o laço não ser infinito.',
+  code:'contagem = 3\nwhile contagem > 0:\n    print(contagem)\n    contagem = contagem - 1\nprint("Fogo!")',
+  res:['3','2','1','Fogo!'],gap:700,
+  say:['O while repete enquanto uma condição for verdadeira.','Aqui, a contagem começa em 3. Enquanto for maior que zero, ele mostra o número e diminui um.',
+       'Quando chega a zero, a condição fica falsa e o laço termina.','Cuidado: se você esquecer de diminuir, o laço nunca acaba!']}),
+std({t:'break',h2:'break sai do laço',p:'Um programa que pede a senha até acertar.',
+  code:'while True:\n    senha = input("Senha: ")\n    if senha == "1234":\n        break\n    print("Tente de novo")\nprint("Acesso liberado")',
+  res:['Senha: 0000','Tente de novo','Senha: 1234','Acesso liberado'],gap:900,
+  say:['Às vezes, queremos sair do laço antes da hora. Para isso existe o break.','Este programa pede a senha até a pessoa acertar.',
+       'While True significa: repita para sempre.','Quando a senha está certa, o break interrompe o laço e o programa continua.']}),
+desafio('Mostre a tabuada do 5, de 1 a 5.',
+  'for i in range(1, 6):\n    print("5 x", i, "=", 5 * i)',['5 x 1 = 5','5 x 2 = 10','5 x 3 = 15','5 x 4 = 20','5 x 5 = 25'],
+  ['Desafio da aula quatro! Mostre a tabuada do cinco, de um até cinco.',
+   'Pause o vídeo e tente. Dica: lembre que o range não inclui o último número.','Pronto? Veja uma possível solução.',
+   'O for conta de um a cinco, e a cada volta multiplicamos o cinco pelo valor de i.'])
+]);
+
+/* ================= AULA 5 ================= */
+add(4,[
+capa(5,'Funções e erros',['funções com vários parâmetros','valores padrão','dicionários','como ler mensagens de erro']),
+std({t:'Parâmetros',h2:'Funções com vários parâmetros',p:'Entram valores, sai um resultado.',
+  code:'def somar(a, b):\n    return a + b\n\nresultado = somar(4, 6)\nprint(resultado)',res:['10'],
+  say:['Uma função pode receber mais de um valor. Eles se chamam parâmetros.','A função somar recebe a e b, e devolve a soma.',
+       'Guardamos o resultado numa variável e depois mostramos.','Sem o return, a função não devolveria nada.']}),
+std({t:'Valor padrão',h2:'Parâmetros com valor padrão',p:'Se ninguém informar, vale o padrão.',
+  code:'def saudar(nome, saudacao="Olá"):\n    return f"{saudacao}, {nome}!"\n\nprint(saudar("Ana"))\nprint(saudar("Bia", "Oi"))',
+  res:['Olá, Ana!','Oi, Bia!'],gap:700,
+  say:['Dá para dar um valor padrão a um parâmetro.','Se a pessoa não informar a saudação, vale Olá.',
+       'Na primeira chamada, usamos só o nome. Na segunda, trocamos a saudação por Oi.','Isso deixa as funções flexíveis.']}),
+std({t:'Dicionários',h2:'Dicionários: chave e valor',p:'Informações com nome, como uma ficha.',
+  code:'aluno = {"nome": "Ana", "nota": 9}\nprint(aluno["nome"])\naluno["nota"] = 10\nprint(aluno)',
+  res:['Ana',"{'nome': 'Ana', 'nota': 10}"],gap:800,
+  say:['Um dicionário guarda informações com nome, no formato chave e valor.','Aqui, a chave nome tem o valor Ana, e a chave nota tem o valor 9.',
+       'Para ler, usamos a chave entre colchetes. Para alterar, também.','Depois de mudar, a nota vale 10.']}),
+std({t:'Média',h2:'Função que calcula a média',p:'Listas e funções trabalhando juntas.',
+  code:'def media(notas):\n    return sum(notas) / len(notas)\n\nprint(media([8, 6, 10]))',res:['8.0'],
+  say:['Vamos unir listas e funções: uma função que calcula a média.','O sum soma todos os itens da lista, e o len conta quantos são.',
+       'Dividindo uma coisa pela outra, temos a média.','Com as notas 8, 6 e 10, a média é 8.']}),
+std({t:'Lendo erros',h2:'Erros são pistas',p:'Leia sempre a última linha.',
+  code:'print(nome)',
+  res:['Traceback (most recent call last):','  File "aula.py", line 1, in <module>','    print(nome)',"NameError: name 'nome' is not defined"],gap:700,cls:'err',
+  say:['Todo programador vê erros todo dia. Eles não são fracasso, são pistas.','Aqui tentamos mostrar a variável nome, mas ela nunca foi criada.',
+       'O Python avisa: NameError, o nome não está definido.','Leia sempre a última linha da mensagem. Ela diz o tipo do erro e o que aconteceu.',
+       'Erros comuns: esquecer aspas, errar o recuo e escrever o nome da variável diferente.']}),
+desafio('Crie uma função que converte graus Celsius em Fahrenheit.',
+  'def para_fahrenheit(c):\n    return c * 9 / 5 + 32\n\nprint(para_fahrenheit(100))',['212.0'],
+  ['Desafio da aula cinco! Crie uma função que converte graus Celsius em Fahrenheit.',
+   'Pause o vídeo e tente. Dica: multiplique por 9, divida por 5 e some 32.','Pronto? Veja uma possível solução.',
+   'Cem graus Celsius equivalem a duzentos e doze Fahrenheit, a temperatura em que a água ferve.'])
+]);
+
+/* ================= AULA 6 ================= */
+add(5,[
+capa(6,'Projeto final: jogo de adivinhação',['juntar tudo que você aprendeu','construir um jogo passo a passo','ler o código como programador']),
+std({t:'Passo 1',h2:'Passo 1: o palpite',p:'Guardar o segredo e perguntar.',
+  code:'segredo = 7\npalpite = int(input("Seu palpite: "))',res:['Seu palpite: 4'],
+  say:['Vamos construir um jogo de adivinhação, passo a passo.','Primeiro, o programa guarda um número secreto e pergunta o palpite.',
+       'Lembre: o input devolve texto, então usamos o int.','Por enquanto ele só pergunta. Vamos fazer ele reagir.']}),
+std({t:'Passo 2',h2:'Passo 2: dar dicas',p:'Comparar o palpite com o segredo.',
+  code:'segredo = 7\npalpite = int(input("Seu palpite: "))\nif palpite < segredo:\n    print("Muito baixo")\nelif palpite > segredo:\n    print("Muito alto")\nelse:\n    print("Acertou!")',
+  res:['Seu palpite: 4','Muito baixo'],gap:900,
+  say:['Passo dois: dar dicas.','Se o palpite for menor que o segredo, o programa diz: muito baixo.',
+       'Se for maior, diz: muito alto. Senão, a pessoa acertou.','Com o palpite 4 e o segredo 7, aparece: muito baixo. Mas só dá uma chance.']}),
+std({t:'Passo 3',h2:'Passo 3: repetir até acertar',p:'Entra o while.',
+  code:'segredo = 7\npalpite = 0\nwhile palpite != segredo:\n    palpite = int(input("Seu palpite: "))\n    if palpite < segredo:\n        print("Muito baixo")\n    elif palpite > segredo:\n        print("Muito alto")\nprint("Acertou!")',
+  res:['Seu palpite: 4','Muito baixo','Seu palpite: 9','Muito alto','Seu palpite: 7','Acertou!'],gap:800,
+  say:['Passo três: repetir até acertar.','Usamos o while: ele continua enquanto o palpite for diferente do segredo.',
+       'A cada volta, o programa pergunta e dá uma dica.','Quando a pessoa digita 7, o laço termina e aparece: Acertou!']}),
+std({t:'Passo 4',h2:'Passo 4: sorteio e tentativas',p:'Agora o segredo muda a cada partida.',
+  code:'import random\n\nsegredo = random.randint(1, 10)\ntentativas = 0\npalpite = 0\nwhile palpite != segredo:\n    palpite = int(input("Seu palpite: "))\n    tentativas = tentativas + 1\n    if palpite < segredo:\n        print("Muito baixo")\n    elif palpite > segredo:\n        print("Muito alto")\nprint(f"Acertou em {tentativas} tentativas!")',
+  res:['Seu palpite: 5','Muito alto','Seu palpite: 3','Muito baixo','Seu palpite: 4','Acertou em 3 tentativas!'],gap:800,
+  say:['Passo quatro: deixar o jogo imprevisível.','O import random traz a ferramenta de sorteio, e o randint escolhe um número entre 1 e 10.',
+       'Também criamos um contador de tentativas.','No final, uma f string mostra em quantas tentativas a pessoa acertou.',
+       'Esse é só um exemplo de partida. Cada vez que você rodar, o número secreto será outro.']}),
+{
+  title:'Encerramento',
+  say:['Parabéns! Você concluiu o curso.',
+       'Você aprendeu a mostrar e guardar dados, decidir, repetir, organizar o código em funções e ainda construiu um jogo.',
+       'Para continuar, faça pequenos projetos: uma calculadora, uma lista de tarefas e um quiz.',
+       'Lembre-se: programar se aprende praticando, um pouco todos os dias. Obrigado por assistir, e até a próxima!'],
+  html:()=>`<div class="scene"><div class="copy"><h2>Você terminou o curso!</h2><p>Agora é praticar com projetos seus.</p></div>
+  <div class="viz"><div class="pair">
+    <div class="card" data-at="1500"><h3>O que você aprendeu</h3><ul class="checks">
+      <li>Mostrar e guardar dados</li><li>Textos, números e input</li><li>Decisões com if, elif e else</li><li>Listas, for e while</li><li>Funções e dicionários</li><li>Um jogo completo</li></ul></div>
+    <div class="card dk" data-at="9000"><h3>Ideias de projetos</h3><ol>
+      <li>Calculadora de gorjeta</li><li>Lista de tarefas</li><li>Quiz de perguntas</li></ol></div>
+  </div></div></div>`
+}
+]);
+
+/* índices por aula */
+const aulaFirst=aulas.map((_,a)=>scenes.findIndex(s=>s.aula===a));
+const aulaLen=aulas.map((_,a)=>scenes.filter(s=>s.aula===a).length);
+
+/* ---------- player ---------- */
+let idx=0, run=0, paused=true, started=false, muted=false, rate=0.92, sid=0, timers=[], cur=null, voice=null, navAula=-1, ptVoices=[];
+const sceneEl=$('#scene'), cap=$('#cap'), bar=$('#bar'), cover=$('#cover'), playBtn=$('#play');
+
+function voiceScore(v){
+  const n=v.name.toLowerCase();let s=0;
+  if(v.lang==='pt-BR'||v.lang==='pt_BR')s+=10;
+  if(/natural|neural|online/.test(n))s+=30;
+  if(/premium|enhanced|siri|aprimorad/.test(n))s+=25;
+  if(/google/.test(n))s+=8;
+  if(/francisca|luciana|fernanda|vit[óo]ria|thalita|camila|maria/.test(n))s+=6;
+  return s;
+}
+function pickVoice(){
+  if(!('speechSynthesis' in window))return;
+  ptVoices=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().replace('_','-').startsWith('pt')).sort((a,b)=>voiceScore(b)-voiceScore(a));
+  voice=voice&&ptVoices.includes(voice)?voice:ptVoices[0]||null;
+  const good=voice&&/natural|neural|online|premium|enhanced|siri|google/i.test(voice.name);
+  const hint=$('#hint');
+  hint.hidden=!!good;
+  hint.textContent='Esta voz é básica. Para uma voz bem mais humana, abra a aula no Microsoft Edge (escolha "Francisca Online (Natural)" ou "Thalita Online (Natural)") ou no iPhone/Mac (instale a voz Luciana Aprimorada em Ajustes > Acessibilidade > Conteúdo Falado).';
+  $('#voice').innerHTML=ptVoices.length?ptVoices.map((v,i)=>`<option value="${i}"${v===voice?' selected':''}>${esc(v.name)}</option>`).join(''):'<option>Voz padrão do aparelho</option>';
+}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+
+function clearTimers(){timers.forEach(clearTimeout);timers=[]}
+function after(ms,fn){const r=run;timers.push(setTimeout(()=>{if(r===run)fn()},ms))}
+
+function renderScene(i){
+  sceneEl.innerHTML=scenes[i].html();
+  sceneEl.scrollTop=0;
+  let end=0;
+  sceneEl.querySelectorAll('[data-at]').forEach(el=>{
+    const d=+el.dataset.at; end=Math.max(end,d);
+    after(d,()=>el.classList.add('show'));
+  });
+  sceneEl.querySelectorAll('[data-type]').forEach(el=>{
+    const start=+el.dataset.type, code=el.dataset.code;
+    end=Math.max(end,start+code.length*TS);
+    el.innerHTML='<span class="caret"></span>';
+    after(start,()=>{
+      let n=0;
+      const tick=()=>{
+        n++; el.innerHTML=hl(code.slice(0,n))+(n<code.length?'<span class="caret"></span>':'');
+        if(n<code.length)after(TS,tick);
+      };
+      tick();
+    });
+  });
+  if(scenes[i].run){const e=scenes[i].run({after},scenes[i]);if(e)end=Math.max(end,e)}
+  return end;
+}
+
+function setProgress(i,k,n){
+  const a=scenes[i].aula;
+  bar.style.width=(((i-aulaFirst[a])+(n?k/n:0))/aulaLen[a]*100)+'%';
+}
+
+function buildNav(){
+  const a=scenes[idx].aula;
+  if(a!==navAula){
+    navAula=a;
+    const nav=$('#nav');nav.innerHTML='';
+    scenes.forEach((s,j)=>{
+      if(s.aula!==a)return;
+      const b=document.createElement('button');
+      b.textContent=(j-aulaFirst[a]+1)+'. '+s.title;
+      b.onclick=()=>{started=true;paused=false;cover.hidden=true;playScene(j)};
+      b.dataset.i=j;nav.appendChild(b);
+    });
+    $('#rotTxt').value=`AULA ${a+1} · ${aulas[a].t}\n\n`+scenes.filter(s=>s.aula===a).map((s,k)=>`CENA ${k+1} · ${s.title}\n${s.say.join(' ')}`).join('\n\n');
+  }
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('cur',+b.dataset.i===idx));
+  document.querySelectorAll('#tabs button').forEach((b,j)=>b.classList.toggle('cur',j===a));
+}
+function setPlayLabel(){
+  playBtn.textContent=paused?(cur&&cur.done?'↻ Rever':'▶ Play'):'❚❚ Pausar';
+}
+
+function playScene(i){
+  run++; clearTimers(); sid++;
+  if('speechSynthesis' in window)speechSynthesis.cancel();
+  idx=i; buildNav();
+  const animEnd=renderScene(i);
+  cur={k:0,sents:scenes[i].say,animEnd,t0:Date.now(),done:false};
+  setPlayLabel();
+  step();
+}
+
+function step(){
+  if(!cur||paused)return;
+  const token=run;
+  if(cur.k>=cur.sents.length){
+    const wait=Math.max(0,cur.animEnd-(Date.now()-cur.t0))+1100;
+    after(wait,goNext);
+    return;
+  }
+  cap.textContent=cur.sents[cur.k];
+  setProgress(idx,cur.k,cur.sents.length);
+  speak(cur.sents[cur.k],()=>{if(token===run){cur.k++;step()}});
+}
+
+function speak(text,cb){
+  const my=++sid;
+  if(muted||!('speechSynthesis' in window)){
+    timers.push(setTimeout(()=>{if(my===sid)cb()},Math.max(1800,text.length*70/rate)));
+    return;
+  }
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='pt-BR'; if(voice)u.voice=voice; u.rate=rate; u.pitch=1; u.volume=1;
+  let fin=false, fb;
+  const done=()=>{if(fin)return;fin=true;clearTimeout(fb);if(my===sid&&!paused)cb()};
+  u.onend=done; u.onerror=done;
+  fb=setTimeout(done,text.length*120/rate+4000);
+  timers.push(fb);
+  speechSynthesis.speak(u);
+}
+
+function goNext(){
+  if(paused)return;
+  if(idx<scenes.length-1)playScene(idx+1);
+  else{paused=true;cur.done=true;bar.style.width='100%';cap.textContent='Curso concluído. Parabéns! Aperte "Rever" para assistir de novo.';setPlayLabel()}
+}
+function pause(){paused=true;sid++;if('speechSynthesis' in window)speechSynthesis.cancel();setPlayLabel()}
+function resume(){paused=false;setPlayLabel();step()}
+function begin(i){started=true;paused=false;cover.hidden=true;playScene(i)}
+function go(i){
+  if(!started)return begin(Math.max(0,i));
+  if(i<0||i>=scenes.length)return;
+  const was=paused;paused=false;playScene(i);if(was)pause();
+}
+
+$('#start').onclick=()=>begin(0);
+playBtn.onclick=()=>{
+  if(!started)return begin(0);
+  if(cur&&cur.done){paused=false;return playScene(0)}
+  paused?resume():pause();
+};
+$('#next').onclick=()=>go(idx+1);
+$('#prev').onclick=()=>go(idx-1);
+$('#mute').onclick=e=>{
+  muted=!muted;e.target.textContent=muted?'Voz: desligada':'Voz: ligada';e.target.setAttribute('aria-pressed',muted);
+  if(started&&!paused){sid++;if('speechSynthesis' in window)speechSynthesis.cancel();step()}
+};
+$('#rate').onchange=e=>{rate=+e.target.value};
+$('#voice').onchange=e=>{
+  const v=ptVoices[+e.target.value];if(v)voice=v;
+  if(started&&!paused){sid++;speechSynthesis.cancel();step()}
+};
+$('#rotTxt').onclick=e=>e.target.select();
+
+const tabs=$('#tabs');
+aulas.forEach((a,j)=>{
+  const b=document.createElement('button');
+  b.textContent=`Aula ${j+1} · ${a.t}`;
+  b.onclick=()=>{started=true;paused=false;cover.hidden=true;playScene(aulaFirst[j])};
+  tabs.appendChild(b);
+});
+buildNav();
+
+document.addEventListener('keydown',e=>{
+  if(['SELECT','TEXTAREA'].includes(e.target.tagName))return;
+  if(e.code==='Space'&&e.target.tagName!=='BUTTON'&&e.target.tagName!=='SUMMARY'){e.preventDefault();playBtn.click()}
+  if(e.code==='ArrowRight')$('#next').click();
+  if(e.code==='ArrowLeft')$('#prev').click();
+});
+</script>
+</body>
+</html>
